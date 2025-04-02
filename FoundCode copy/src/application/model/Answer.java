@@ -6,10 +6,18 @@ import java.util.ArrayList;
 public class Answer {
     private String answerFromInput;
     private List<Answer> reply;
+    
+ // Marks if this answer is by a trusted reviewer (1 = yes, 0 = no)
+    private int trusted;
 
-    public Answer(String answerFromInput) {
+    // Keeps track of votes (weight)
+    private int weight = 0;
+
+    // updated
+    public Answer(String answerFromInput, int trusted) {
         this.answerFromInput = answerFromInput;
-        this.setReply(new ArrayList<>());
+        this.trusted = trusted;
+        this.reply = new ArrayList<>();
     }
 
     public String getAnswerFromUser() {
@@ -19,10 +27,29 @@ public class Answer {
     public void setanswerFromInput(String answerFromInput) {
         this.answerFromInput = answerFromInput;
     }
+    // Getters and Setters
+    public int getTrusted() {
+        return trusted;
+    }
 
+    public void setTrusted(int trusted) {
+        this.trusted = trusted;
+    }
+    
+    public int getWeight() {
+        return weight;
+    }
+
+    public void upvote() {
+        weight++;
+    }
+    //
+
+    // updated for trusted and weight
     @Override
     public String toString() {
-        return "Answer: " + answerFromInput;
+        String trustLabel = trusted == 1 ? " (by trusted)" : "";
+        return "Answer: " + answerFromInput + trustLabel + " | Weight: " + weight;
     }
 
 	public List<Answer> getReply() {

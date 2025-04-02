@@ -69,11 +69,8 @@ public class DiscussionPageViewModel {
 	 */
     public void createOrUpdateAnswer(String text, boolean newText, Question selectedQuestion, Answer selectedAnswer) {
         if (text.isEmpty() || selectedQuestion == null) return;
-
-        if (newText) {
-            Answer a = new Answer(text);
-            questionAndAnswer.get(selectedQuestion).add(a);
-        } else if (selectedAnswer != null) {
+        // New answers are now created in the View with trusted and weight
+       if (selectedAnswer != null) {
             selectedAnswer.setanswerFromInput(text);
         }
     }
@@ -159,11 +156,8 @@ public class DiscussionPageViewModel {
 	 */
     public void createOrUpdateReply(String text, boolean newText, Answer selectedAnswer, Answer selectedReply) {
         if (text.isEmpty() || selectedAnswer == null) return;
-
-        if (newText) {
-            Answer a = new Answer(text);
-            selectedAnswer.createReply(a);
-        } else if (selectedReply != null) {
+        //reply creation (with trusted flag) happens in the UI now
+       if (selectedReply != null) {
             selectedReply.setanswerFromInput(text);
         }
     }

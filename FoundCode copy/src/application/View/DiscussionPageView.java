@@ -3,6 +3,7 @@ package application.View;
 import application.viewModel.DiscussionPageViewModel;
 import application.model.Question;
 
+import java.util.ArrayList;
 import java.util.List;
 
 import application.model.Answer;
@@ -40,6 +41,12 @@ public class DiscussionPageView {
         Button questionSolvedButton = new Button("Mark as Solved");
         Button filterUnresolvedButton = new Button("Show Unresolved Questions");
         Button showAllQuestionsButton = new Button("Show All Questions");
+        // New Buttons
+        Button showTrustedAnswersButton = new Button("Show Trusted Answers");
+        Button showAllAnswersButton = new Button("Show All Answers");
+        Button upvoteButton = new Button("👍 Upvote");
+        CheckBox trustedBox = new CheckBox("Trusted Reviewer?");
+
 
         
         filterUnresolvedButton.setOnAction(e -> {
@@ -102,7 +109,11 @@ public class DiscussionPageView {
             if (selectedQuestion == null || answerTextBox.getText().isEmpty()) {
                 errorLabelAnswer.setText("Please select a question and type your answer!");
             } else {
-                viewModel.createOrUpdateAnswer(answerTextBox.getText(), true, selectedQuestion, null);
+            	// add the Trust option
+            	int trusted = trustedBox.isSelected() ? 1 : 0;
+            	Answer answer = new Answer(answerTextBox.getText(), trusted);
+            	viewModel.getQuestionAndAnswer().get(selectedQuestion).add(answer);
+
                 errorLabelAnswer.setText("");
                 answerTextBox.clear();
                 updateTreeView(selectedQuestion);
@@ -113,7 +124,9 @@ public class DiscussionPageView {
             Answer selectedAnswer = getSelectedAnswer();
             Question selectedQuestion = questionInListView.getSelectionModel().getSelectedItem();
             if (selectedAnswer != null && !answerTextBox.getText().isEmpty()) {
-                viewModel.createOrUpdateAnswer(answerTextBox.getText(), false, selectedQuestion, selectedAnswer);
+            	//updated
+            	selectedAnswer.setanswerFromInput(answerTextBox.getText());
+            	selectedAnswer.setTrusted(trustedBox.isSelected() ? 1 : 0);
                 errorLabelAnswer.setText("");
                 updateTreeView(selectedQuestion);
             } else {
@@ -138,12 +151,26 @@ public class DiscussionPageView {
             if (selectedAnswer == null || answerTextBox.getText().isEmpty()) {
                 errorLabelAnswer.setText("Please select an answer and type your reply!");
             } else {
-                viewModel.createOrUpdateReply(answerTextBox.getText(), true, selectedAnswer, null);
+            	//updated
+            	int trusted = trustedBox.isSelected() ? 1 : 0;
+            	Answer reply = new Answer(answerTextBox.getText(), trusted);
+            	selectedAnswer.createReply(reply);
+
                 errorLabelAnswer.setText("");
                 answerTextBox.clear();
                 updateTreeView(questionInListView.getSelectionModel().getSelectedItem());
             }
         });
+        
+        //new upvote button
+        upvoteButton.setOnAction(e -> {
+            Answer selected = getSelectedAnswer();
+            if (selected != null) {
+                selected.upvote();
+                updateTreeView(questionInListView.getSelectionModel().getSelectedItem());
+            }
+        });
+
 
         questionSolvedButton.setOnAction(e -> {
             Question selected = questionInListView.getSelectionModel().getSelectedItem();
@@ -154,6 +181,56 @@ public class DiscussionPageView {
                 errorLabelQuestion.setText("Please select a question to mark as solved!");
             }
         });
+        
+        // Trusted Answers filter button
+        showTrustedAnswersButton.setOnAction(e -> {
+            Question selected = questionInListView.getSelectionModel().getSelectedItem();
+            if (selected == null) return;
+
+            TreeItem<Answer> root = new TreeItem<>();
+
+            // Get and sort trusted top-level answers by weight
+            List<Answer> sortedTrustedAnswers = new ArrayList<>();
+            for (Answer a : viewModel.getQuestionAndAnswer().get(selected)) {
+                if (a.getTrusted() == 1) {
+                    sortedTrustedAnswers.add(a);
+                }
+            }
+            sortedTrustedAnswers.sort((a1, a2) -> Integer.compare(a2.getWeight(), a1.getWeight())); // descending
+
+            for (Answer a : sortedTrustedAnswers) {
+                TreeItem<Answer> answerItem = new TreeItem<>(a);
+
+                // Get and sort trusted replies by weight
+                List<Answer> sortedTrustedReplies = new ArrayList<>();
+                for (Answer r : a.getReply()) {
+                    if (r.getTrusted() == 1) {
+                        sortedTrustedReplies.add(r);
+                    }
+                }
+                sortedTrustedReplies.sort((r1, r2) -> Integer.compare(r2.getWeight(), r1.getWeight()));
+
+                for (Answer r : sortedTrustedReplies) {
+                    answerItem.getChildren().add(new TreeItem<>(r));
+                }
+
+                root.getChildren().add(answerItem);
+            }
+
+            answerTreeView.setRoot(root);
+            answerTreeView.setShowRoot(false);
+        });
+
+        
+        // show all answers button
+        
+        showAllAnswersButton.setOnAction(e -> {
+            Question selected = questionInListView.getSelectionModel().getSelectedItem();
+            if (selected != null) {
+                updateTreeView(selected);
+            }
+        });
+
 
         globalSearchTextBox.textProperty().addListener((obs, oldVal, newVal) -> {
             FilteredList<Question> filteredQuestions = viewModel.initiatedGlobalSearch(newVal);
@@ -185,7 +262,21 @@ public class DiscussionPageView {
         
         VBox questionBox = new VBox(new Label("Questions"), globalSearchTextBox, questionTextBox, errorLabelQuestion, 
         	    addQuestionButton, updateQuestionButton, deleteQuestionButton, questionSolvedButton, filterUnresolvedButton, showAllQuestionsButton, questionInListView);
-        VBox answerBox = new VBox(new Label("Answers"), answerTextBox, errorLabelAnswer, addAnswerButton, updateAnswerButton, deleteAnswerButton, addReplyButton, answerTreeView);
+        VBox answerBox = new VBox(
+        	    new Label("Answers"),
+        	    answerTextBox,
+        	    trustedBox,
+        	    errorLabelAnswer,
+        	    addAnswerButton,
+        	    updateAnswerButton,
+        	    deleteAnswerButton,
+        	    addReplyButton,
+        	    upvoteButton,
+        	    showTrustedAnswersButton,
+        	    showAllAnswersButton,
+        	    answerTreeView
+        	);
+
         splitPane.getItems().addAll(questionBox, answerBox);
 
         primaryStage.setScene(new Scene(splitPane, 1000, 700));
@@ -201,22 +292,30 @@ public class DiscussionPageView {
             return null;
         }
     }
-
+    // updated
     private void updateTreeView(Question question) {
-    	 // D, J. (1962, January 1). How to update a TreeView in javafx with data from users. Stack Overflow. https://stackoverflow.com/questions/42284060/how-to-update-a-treeview-in-javafx-with-data-from-users 
         TreeItem<Answer> root = new TreeItem<>();
-        for (Answer answer : viewModel.getQuestionAndAnswer().get(question)) {
+
+        List<Answer> sortedAnswers = new ArrayList<>(viewModel.getQuestionAndAnswer().get(question));
+        sortedAnswers.sort((a1, a2) -> Integer.compare(a2.getWeight(), a1.getWeight())); // descending
+
+        for (Answer answer : sortedAnswers) {
             TreeItem<Answer> answerItem = new TreeItem<>(answer);
-            root.getChildren().add(answerItem);
-            for (Answer reply : answer.getReply()) {
-                TreeItem<Answer> replyItem = new TreeItem<>(reply);
-                answerItem.getChildren().add(replyItem);
+
+            List<Answer> sortedReplies = new ArrayList<>(answer.getReply());
+            sortedReplies.sort((r1, r2) -> Integer.compare(r2.getWeight(), r1.getWeight())); // descending
+
+            for (Answer reply : sortedReplies) {
+                answerItem.getChildren().add(new TreeItem<>(reply));
             }
+
+            root.getChildren().add(answerItem);
         }
-        //Class ListView, Listview (Javafx 8). (2015). https://docs.oracle.com/javase/8/javafx/api/javafx/scene/control/ListView.html (accessed February 10, 2025).
+
         answerTreeView.setRoot(root);
         answerTreeView.setShowRoot(false);
     }
+
 
     // Sshahine. (n.d.). JFoenix/demo/src/main/java/demos/components/treeviewdemo.java at master · SSHAHINE/JFOENIX. GitHub. https://github.com/sshahine/JFoenix/blob/master/demo/src/main/java/demos/components/TreeViewDemo.java 
     private TreeItem<Answer> filterAnswer(Question question, String searchQuery) {
