@@ -8,143 +8,110 @@ Ricardo Guerrero,
 Cristian Holguin, 
 DANIEL YI-CHIAN LIAO
 
-## Team project 2 user stories
+## Team project 3 user stories
 
-![Demo!](https://github.com/user-attachments/assets/acede184-16b8-4684-813c-9ccfb13b2e36)
+![Demo!](https://github.com/link)
 
 ### Video explains the code: 
 
-https://youtu.be/87m6e5gmCIk
+https://youtu.be/link
 
 ### Video on how each requirement is satisfied: 
 
-https://youtu.be/mGmMfiUSbgQ
+https://youtu.be/mlink
 
-### 1. Students to ask questions and 5. Students to update questions or answers.
+### 1.  Students to establish and maintain a list of trusted reviewers.
 ```java
 // User story 1 and 5: Students to ask or update question
-    public void createOrUpdateQuestion(String text, boolean newText, Question selected) {
-        if (newText) {
-            Question q = new Question(text);
-            questionInList.add(q);
-            questionAndAnswer.put(q, new ArrayList<>());
-        } else if (selected != null) {
-            selected.setQuestionFromUser(text);
-            questionInList.set(questionInList.indexOf(selected), selected);
-        }
-    }
+    // UI: Add checkbox to mark answer as trusted
+    CheckBox trustedBox = new CheckBox("Trusted Reviewer?");
+
+    // In addAnswerButton:
+    int trusted = trustedBox.isSelected() ? 1 : 0;
+    Answer answer = new Answer(answerTextBox.getText(), trusted);
+    viewModel.getQuestionAndAnswer().get(selectedQuestion).add(answer);
+
 ```
 
-### 2. Students to propose answers and 5. Students to update questions or answers.
+
 ```java
-// User story 2 and 5: Students to propose or update answer
-    public void createOrUpdateAnswer(String text, boolean newText, Question selectedQuestion, Answer selectedAnswer) {
-        if (text.isEmpty() || selectedQuestion == null) return;
+// 
+    // In Answer.java
+    private int trusted; // 1 = trusted, 0 = not trusted
 
-        if (newText) {
-            Answer a = new Answer(text);
-            questionAndAnswer.get(selectedQuestion).add(a);
-        } else if (selectedAnswer != null) {
-            selectedAnswer.setanswerFromInput(text);
-        }
-    }
-```
-### 3. Students to search for and read questions and proposed answers.
+    public int getTrusted() { return trusted; }
+    public void setTrusted(int trusted) { this.trusted = trusted; }
 
-Listens for user searches on search bar
-```java
-globalSearchTextBox.textProperty().addListener((obs, oldVal, newVal) -> {
-            FilteredList<Question> filteredQuestions = viewModel.initiatedGlobalSearch(newVal);
-            questionInListView.setItems(filteredQuestions);
+    @Override
+    public String toString() {
+    String trustLabel = trusted == 1 ? " (by trusted)" : "";
+    return "Answer: " + answerFromInput + trustLabel + " | Weight: " + weight;
+}
 
-            if (!filteredQuestions.isEmpty()) {
-                Question firstMatchingQuestion = filteredQuestions.get(0);
-                TreeItem<Answer> filteredTree = filterAnswer(firstMatchingQuestion, newVal);
-                answerTreeView.setRoot(filteredTree);
-                answerTreeView.setShowRoot(false);
-            } else {
-                answerTreeView.setRoot(null);
-            }
-        });
 ```
 
-initiatedGlobalSearch(String searchQuery) filters questionInList based on the user's search query. It checks:
 
-1. If the question itself (from question.getQuestionFromUser()) contains the searchQuery.
-
-2. If any of the answers associated with the question contain the searchQuery
-```java
-public FilteredList<Question> initiatedGlobalSearch(String searchQuery) {
-        return questionInList.filtered(question ->
-            question.getQuestionFromUser().toLowerCase().contains(searchQuery.toLowerCase()) || questionAndAnswer.get(question).stream().anyMatch(answer -> answer.getAnswerFromUser().toLowerCase().contains(searchQuery.toLowerCase()) || matchReply(answer, searchQuery))
-        );
-    }
-```
-
-filterAnswer(Question question, String searchQuery) 
-
-1. Loops through all answers associated with the given question.
-
-2. If an answer contains the searchQuery, it is added to the tree we created.
-
-3. If a reply to an answer also contains the searchQuery, it is added as a child of the answer.
 
 ```java
-    // Sshahine. (n.d.). JFoenix/demo/src/main/java/demos/components/treeviewdemo.java at master · SSHAHINE/JFOENIX. GitHub. https://github.com/sshahine/JFoenix/blob/master/demo/src/main/java/demos/components/TreeViewDemo.java 
-    private TreeItem<Answer> filterAnswer(Question question, String searchQuery) {
-        TreeItem<Answer> root = new TreeItem<>();
-        List<Answer> answers = viewModel.getQuestionAndAnswer().getOrDefault(question, List.of());
-
-        for (Answer answer : answers) {
-            if (!answer.getAnswerFromUser().contains(searchQuery)) {
-                continue; 
-            }
-            TreeItem<Answer> answerItem = new TreeItem<>(answer);
+// Filter trusted answers
+    showTrustedAnswersButton.setOnAction(e -> {
+    TreeItem<Answer> root = new TreeItem<>();
+    for (Answer a : viewModel.getQuestionAndAnswer().get(selected)) {
+        if (a.getTrusted() == 1) {
+            TreeItem<Answer> answerItem = new TreeItem<>(a);
             root.getChildren().add(answerItem);
-
-            for (Answer reply : answer.getReply()) {
-                if (reply.getAnswerFromUser().contains(searchQuery)) {
-                    answerItem.getChildren().add(new TreeItem<>(reply));
-                }
-            }
         }
-        return root;
     }
+    answerTreeView.setRoot(root);
+    });
+
 ```
 
 
-### 4. Students to ask for or suggest clarifications. 
-```java
-// User story 4: Students to ask for or suggest clarifications.
-    public void createOrUpdateReply(String text, boolean newText, Answer selectedAnswer, Answer selectedReply) {
-        if (text.isEmpty() || selectedAnswer == null) return;
 
-        if (newText) {
-            Answer a = new Answer(text);
-            selectedAnswer.createReply(a);
-        } else if (selectedReply != null) {
-            selectedReply.setanswerFromInput(text);
-        }
-    }
+###  Students to add a weightage value to each reviewer 
+
+```java
+    // In Answer.java
+    private int weight = 0;
+
+    public int getWeight() { return weight; }
+    public void upvote() { weight++; }
+
 ```
 
-### 6. Students that posted the question to announce that a specific answer addressed the issue that prompted the initial question.
+
+
 ```java
-// User story 6: Students that posted the question to announce that a specific answer addressed the issue that prompted the initial question.
-    public void solvedQuestion(Question selected) {
-        if (selected != null) {
-            selected.markAsSolved();
-            questionInList.set(questionInList.indexOf(selected), selected);
-        }
+
+ // In DiscussionPageView.java
+    Button upvoteButton = new Button("?? Upvote");
+
+    upvoteButton.setOnAction(e -> {
+    Answer selected = getSelectedAnswer();
+    if (selected != null) {
+        selected.upvote();
+        updateTreeView(questionInListView.getSelectionModel().getSelectedItem());
     }
+    });
+
 ```
 
-### 7. As a student, I can see a list of all unresolved questions
+
 ```java
-filterUnresolvedButton.setOnAction(e -> {
-            FilteredList<Question> unresolvedQuestions = viewModel.getQuestionInList().filtered(question -> !question.isSolved());
-            questionInListView.setItems(unresolvedQuestions);
-        });
+// 
+    // Sort trusted answers by weight
+    List<Answer> sortedTrustedAnswers = new ArrayList<>();
+    for (Answer a : viewModel.getQuestionAndAnswer().get(selected)) {
+        if (a.getTrusted() == 1) sortedTrustedAnswers.add(a);
+    }
+    sortedTrustedAnswers.sort((a1, a2) -> Integer.compare(a2.getWeight(), a1.getWeight()));
+
+```
+
+### .
+```java
+
 ```
 
 ## New files from team project 1 to team project 2
