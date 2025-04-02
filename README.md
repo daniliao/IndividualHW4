@@ -22,7 +22,6 @@ https://youtu.be/link
 
 ### 1.  Students to establish and maintain a list of trusted reviewers.
 ```java
-// User story 1 and 5: Students to ask or update question
     // UI: Add checkbox to mark answer as trusted
     CheckBox trustedBox = new CheckBox("Trusted Reviewer?");
 
