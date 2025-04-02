@@ -8,7 +8,7 @@ Ricardo Guerrero,
 Cristian Holguin, 
 DANIEL YI-CHIAN LIAO
 
-## Team project 3 user stories
+## Team project 
 
 ![Demo!](https://github.com/link)
 
@@ -18,7 +18,7 @@ https://youtu.be/link
 
 ### Video on how each requirement is satisfied: 
 
-https://youtu.be/mlink
+https://youtu.be/link
 
 ### 1.  Students to establish and maintain a list of trusted reviewers.
 ```java
@@ -69,7 +69,7 @@ https://youtu.be/mlink
 
 
 
-###  Students to add a weightage value to each reviewer 
+### 2. Students to add a weightage value to each reviewer 
 
 ```java
     // In Answer.java
