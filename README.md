@@ -1,136 +1,75 @@
-# CSE360 Team Project | Wednesday 48
+# CSE360 Individual Homework 4 | Wednesday 48
 
-Team Member: 
-Mohammed Almakki, 
-Matthew Cruz, 
-Octavian Englund, 
-Ricardo Guerrero, 
-Cristian Holguin, 
 DANIEL YI-CHIAN LIAO
 
-## Team project 
+### Video explains the code and JUnit test: 
 
-![Demo!](https://github.com/link)
+https://youtu.be/EqYPwPa-z20
 
-### Video explains the code: 
+https://youtu.be/14XF1Q4WgWM
 
-https://youtu.be/link
 
 ### Video on how each requirement is satisfied: 
 
-https://youtu.be/link
+[https://youtu.be/link](https://youtu.be/SMYdryD6mMM)
 
-### 1.  Students to establish and maintain a list of trusted reviewers.
-```java
-    // UI: Add checkbox to mark answer as trusted
-    CheckBox trustedBox = new CheckBox("Trusted Reviewer?");
-
-    // In addAnswerButton:
-    int trusted = trustedBox.isSelected() ? 1 : 0;
-    Answer answer = new Answer(answerTextBox.getText(), trusted);
-    viewModel.getQuestionAndAnswer().get(selectedQuestion).add(answer);
-
-```
-
+### 1. Staff navigates to different views
 
 ```java
-// 
-    // In Answer.java
-    private int trusted; // 1 = trusted, 0 = not trusted
+public void show(Stage primaryStage) {
 
-    public int getTrusted() { return trusted; }
-    public void setTrusted(int trusted) { this.trusted = trusted; }
+    Button messagingButton = new Button("Messaging");
+    messagingButton.setOnAction(a -> {
+        ReviewerMessagingPage messagingPage = new ReviewerMessagingPage("Jessica");
+        messagingPage.show(primaryStage);
+    });
 
-    @Override
-    public String toString() {
-    String trustLabel = trusted == 1 ? " (by trusted)" : "";
-    return "Answer: " + answerFromInput + trustLabel + " | Weight: " + weight;
+    Button reviewListButton = new Button("reviewList");
+    reviewListButton.setOnAction(a -> {
+        ReviewerReviewListPage reviewListPage = new ReviewerReviewListPage("Jessica");
+        reviewListPage.show(primaryStage);
+    });
+
+    Button studentMessageReviewerPageButton = new Button("studentMessageReviewerPage");
+    studentMessageReviewerPageButton.setOnAction(a -> {
+        StudentMessageReviewerPage studentMessageReviewerPage = new StudentMessageReviewerPage("Jessica");
+        studentMessageReviewerPage.show(primaryStage);
+    });
+
+    Button discussionPageButton = new Button("discussionPage");
+    discussionPageButton.setOnAction(a -> {
+        DiscussionPageView discussionPageView = new DiscussionPageView();
+        discussionPageView.show(primaryStage);
+    });
+
+    VBox layout = new VBox(10, messagingButton, reviewListButton, studentMessageReviewerPageButton, discussionPageButton);
+    layout.setStyle("-fx-padding: 20; -fx-alignment: center;");
+    primaryStage.setScene(new Scene(layout, 800, 400));
+    primaryStage.setTitle("Staff Home page");
+    primaryStage.show();
 }
-
 ```
 
+---
 
+### 2. Pages connected via Buttons
 
-```java
-// Filter trusted answers
-    showTrustedAnswersButton.setOnAction(e -> {
-    TreeItem<Answer> root = new TreeItem<>();
-    for (Answer a : viewModel.getQuestionAndAnswer().get(selected)) {
-        if (a.getTrusted() == 1) {
-            TreeItem<Answer> answerItem = new TreeItem<>(a);
-            root.getChildren().add(answerItem);
-        }
-    }
-    answerTreeView.setRoot(root);
-    });
+| Button                       | Opens Page                         |
+|-----------------------------|-------------------------------------|
+| `Messaging`                 | ReviewerMessagingPage               |
+| `reviewList`               | ReviewerReviewListPage              |
+| `studentMessageReviewerPage` | StudentMessageReviewerPage        |
+| `discussionPage`           | DiscussionPageView (discussion board)|
 
-```
+---
 
 
 
-### 2. Students to add a weightage value to each reviewer 
-
-```java
-    // In Answer.java
-    private int weight = 0;
-
-    public int getWeight() { return weight; }
-    public void upvote() { weight++; }
+## New files for HW4
 
 ```
-
-
-
-```java
-
- // In DiscussionPageView.java
-    Button upvoteButton = new Button("?? Upvote");
-
-    upvoteButton.setOnAction(e -> {
-    Answer selected = getSelectedAnswer();
-    if (selected != null) {
-        selected.upvote();
-        updateTreeView(questionInListView.getSelectionModel().getSelectedItem());
-    }
-    });
-
-```
-
-
-```java
-// 
-    // Sort trusted answers by weight
-    List<Answer> sortedTrustedAnswers = new ArrayList<>();
-    for (Answer a : viewModel.getQuestionAndAnswer().get(selected)) {
-        if (a.getTrusted() == 1) sortedTrustedAnswers.add(a);
-    }
-    sortedTrustedAnswers.sort((a1, a2) -> Integer.compare(a2.getWeight(), a1.getWeight()));
-
-```
-
-### .
-```java
-
-```
-
-## New files from team project 1 to team project 2
-
-```
-View
-└──DiscussionPageView.class
-```
-
-```
-model
-└──Answer.class
-└──Answers.class
-└──Question.class
-└──Questions.class
-```
-
-```
-viewModel
-└── DiscussionPageViewModel.class
+application
+└──StaffHomePage.java
 ```
 
 ```
