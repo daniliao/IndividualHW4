@@ -1,16 +1,17 @@
-package application.model;
+package test;
 
+import org.junit.Before;
+import org.junit.Test;
 import application.model.Message;
 import application.model.MessageStore;
-import org.junit.jupiter.api.*;
+
+import static org.junit.Assert.*;
 
 import java.util.List;
 
-import static org.junit.jupiter.api.Assertions.*;
-
 public class MessageStoreTest {
 
-    @BeforeEach
+    @Before
     public void setup() {
         MessageStore.clear();
     }

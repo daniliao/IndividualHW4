@@ -1,16 +1,21 @@
-package application.model;
+
+package test;
+
+import static org.junit.Assert.*;
+import org.junit.Before;
 
 import application.model.Review;
 import application.model.ReviewStore;
-import org.junit.jupiter.api.*;
+
 
 import java.util.List;
 
-import static org.junit.jupiter.api.Assertions.*;
+
+import org.junit.Test;
 
 public class ReviewStoreTest {
 
-    @BeforeEach
+    @Before
     public void clearStore() {
         ReviewStore.clear();
     }

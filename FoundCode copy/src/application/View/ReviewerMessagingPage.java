@@ -19,6 +19,8 @@ public class ReviewerMessagingPage{
 	}
 	
 	public void show(Stage stage) {
+		addFakeMessages();
+		
 		VBox layout = new VBox(10);
 		layout.setStyle("-fx-padding: 20; -fx-alignment: center");
 		
@@ -62,6 +64,14 @@ public class ReviewerMessagingPage{
 		stage.setScene(new Scene(layout, 800, 400));
 		stage.setTitle("Reviewer Messages");
 		stage.show();
+	}
+	
+	private void addFakeMessages() {
+		if (MessageStore.getMessagesForUser(currentReviewer).isEmpty()) {
+			MessageStore.addMessage(new Message("Charlie", currentReviewer, "Hi reviewer! Can you check my subs?", "10:00 AM"));
+			MessageStore.addMessage(new Message("Frank", currentReviewer, "I have a question about HW4.", "10:03 AM"));
+			MessageStore.addMessage(new Message("Ben", currentReviewer, "Can I get feedback on my last assignment?", "10:15 AM"));
+		}
 	}
 	
 	private String extractSender(String messageText) {
